@@ -158,18 +158,30 @@
         </div>
       </div>
 
-      <!-- BOTÓN PARA SOLICITAR SERVICIO (PASAJERO) -->
-      <div class="card-neon p-5 rounded-2xl bg-gradient-to-r from-purple-950/30 to-pink-950/20 border-pink-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h3 class="text-sm font-syne font-bold text-pink-300">¿NECESITAS UN NUEVO SERVICIO?</h3>
-          <p class="text-xs text-gray-400 mt-0.5">Programa la fecha, hora, lugar de recogida y destino.</p>
+      <!-- BOTONES DE ACCIÓN RÁPIDA (SOLICITAR Y CHAT) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="card-neon p-5 rounded-2xl bg-gradient-to-r from-purple-950/30 to-pink-950/20 border-pink-500/30 flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-syne font-bold text-pink-300">¿SOLICITAR UN VIAJE?</h3>
+            <p class="text-xs text-gray-400 mt-0.5">Programa fecha, hora y origen.</p>
+          </div>
+          <button onclick="toggleModalSolicitud(true)" class="btn-neon-pink px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap">
+            + SOLICITAR
+          </button>
         </div>
-        <button onclick="toggleModalSolicitud(true)" class="btn-neon-pink px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap">
-          + SOLICITAR VIAJE
-        </button>
+
+        <div class="card-neon p-5 rounded-2xl bg-gradient-to-r from-purple-950/30 to-blue-950/20 border-cyan-500/30 flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-syne font-bold text-cyan-300">CHAT DIRECTO</h3>
+            <p class="text-xs text-gray-400 mt-0.5">Habla con el administrador.</p>
+          </div>
+          <button onclick="toggleModalChat(true)" class="bg-cyan-950/60 hover:bg-cyan-900/80 text-cyan-300 border border-cyan-500/40 px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap">
+            ABRIR CHAT
+          </button>
+        </div>
       </div>
 
-      <!-- DASHBOARD KPI (PASAJERO) -->
+      <!-- DASHBOARD KPI (PASAJERO) CON SALDO PENDIENTE REAL -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div class="card-neon p-4 rounded-xl flex items-center justify-between">
           <div>
@@ -177,14 +189,16 @@
             <p id="kpiPassengerTotalCount" class="text-2xl font-syne font-bold text-white mt-1">0</p>
           </div>
           <div class="w-10 h-10 rounded-lg bg-purple-900/30 border border-purple-500/20 flex items-center justify-center text-purple-300">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002-2h2a2 2 0 002 2"></path></svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2a2 2 0 002 2"></path></svg>
           </div>
         </div>
 
+        <!-- SALDO PENDIENTE (TOTAL SERVICIOS MENOS ABONOS) -->
         <div class="card-neon p-4 rounded-xl flex items-center justify-between">
           <div>
-            <p class="text-[11px] text-gray-400 font-medium uppercase tracking-wider">Total Acumulado a Pagar</p>
-            <p id="kpiPassengerTotalPrice" class="text-2xl font-syne font-bold mt-1" style="color: var(--neon-green);">$0</p>
+            <p class="text-[11px] text-gray-400 font-medium uppercase tracking-wider">Saldo Pendiente Por Pagar</p>
+            <p id="kpiPassengerBalance" class="text-2xl font-syne font-bold mt-1" style="color: var(--neon-green);">$0</p>
+            <p id="kpiPassengerTotalAbonos" class="text-[10px] text-gray-400">Total Abonos: $0</p>
           </div>
           <div class="w-10 h-10 rounded-lg bg-green-950/40 border border-green-500/30 flex items-center justify-center" style="color: var(--neon-green);">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -222,7 +236,7 @@
       </div>
     </section>
 
-    <!-- MODAL FORMULARIO SOLICITUD DE VIAJE (PASAJERO) -->
+    <!-- MODAL SOLICITUD DE VIAJE -->
     <div id="modalSolicitudViaje" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
       <div class="card-neon p-6 rounded-2xl max-w-md w-full space-y-4">
         <h3 class="text-lg font-syne font-bold text-white">SOLICITAR NUEVO SERVICIO</h3>
@@ -248,9 +262,28 @@
           </div>
 
           <div class="flex space-x-2 pt-2">
-            <button type="button" onclick="toggleModalSolicitud(false)" class="w-1/2 bg-gray-900 hover:bg-gray-800 text-gray-300 py-2 rounded-lg text-xs">CANCELAR</button>
+            <button type="button" onclick="toggleModalSolicitud(false)" class="w-1/2 bg-gray-900 text-gray-300 py-2 rounded-lg text-xs">CANCELAR</button>
             <button type="submit" class="w-1/2 btn-neon-pink py-2 rounded-lg text-xs font-semibold">ENVIAR SOLICITUD</button>
           </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL CHAT DE COMUNICACIÓN -->
+    <div id="modalChat" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div class="card-neon p-5 rounded-2xl max-w-md w-full h-[480px] flex flex-col justify-between">
+        <div class="flex items-center justify-between border-b border-purple-900/40 pb-3">
+          <h3 class="text-sm font-syne font-bold text-white">CHAT DE SERVICIOS Y SOPORTE</h3>
+          <button onclick="toggleModalChat(false)" class="text-gray-400 hover:text-white text-xs">✕</button>
+        </div>
+
+        <div id="chatMessagesBox" class="flex-grow overflow-y-auto my-3 space-y-2 px-1 text-xs">
+          <!-- Mensajes cargados dinámicamente -->
+        </div>
+
+        <form onsubmit="handleSendMessage(event)" class="flex space-x-2 border-t border-purple-900/40 pt-3">
+          <input type="text" id="chatInputText" placeholder="Escribe tu mensaje..." required class="flex-grow input-neon rounded-lg px-3 py-2 text-xs">
+          <button type="submit" class="btn-neon-pink px-4 py-2 rounded-lg text-xs font-semibold">ENVIAR</button>
         </form>
       </div>
     </div>
@@ -276,7 +309,7 @@
             <p id="kpiAdminTotalServices" class="text-2xl font-syne font-bold text-white mt-1">0</p>
           </div>
           <div class="w-10 h-10 rounded-lg bg-purple-900/30 border border-purple-500/20 flex items-center justify-center text-purple-300">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002-2h2a2 2 0 002 2"></path></svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 002 2h2a2 2 0 002 2"></path></svg>
           </div>
         </div>
 
@@ -292,18 +325,24 @@
       </div>
 
       <!-- Pestañas Admin -->
-      <div class="flex border-b border-purple-900/40 space-x-4">
-        <button onclick="switchAdminTab('register')" id="tabAdminRegister" class="pb-3 px-2 border-b-2 border-pink-500 font-bold text-xs text-pink-400">
+      <div class="flex border-b border-purple-900/40 space-x-4 overflow-x-auto">
+        <button onclick="switchAdminTab('register')" id="tabAdminRegister" class="pb-3 px-2 border-b-2 border-pink-500 font-bold text-xs text-pink-400 whitespace-nowrap">
           Registrar Servicio
         </button>
-        <button onclick="switchAdminTab('passengers')" id="tabAdminPassengers" class="pb-3 px-2 border-b-2 border-transparent font-medium text-xs text-gray-400 hover:text-white">
+        <button onclick="switchAdminTab('passengers')" id="tabAdminPassengers" class="pb-3 px-2 border-b-2 border-transparent font-medium text-xs text-gray-400 hover:text-white whitespace-nowrap">
           Crear Pasajero
         </button>
-        <button onclick="switchAdminTab('requests')" id="tabAdminRequests" class="pb-3 px-2 border-b-2 border-transparent font-medium text-xs text-gray-400 hover:text-white flex items-center space-x-1">
+        <button onclick="switchAdminTab('abonos')" id="tabAdminAbonos" class="pb-3 px-2 border-b-2 border-transparent font-medium text-xs text-gray-400 hover:text-white whitespace-nowrap">
+          Abonos y Saldo
+        </button>
+        <button onclick="switchAdminTab('requests')" id="tabAdminRequests" class="pb-3 px-2 border-b-2 border-transparent font-medium text-xs text-gray-400 hover:text-white flex items-center space-x-1 whitespace-nowrap">
           <span>Solicitudes</span>
           <span id="badgePendingRequests" class="hidden bg-pink-600 text-white text-[10px] px-1.5 py-0.2 rounded-full">0</span>
         </button>
-        <button onclick="switchAdminTab('history')" id="tabAdminHistory" class="pb-3 px-2 border-b-2 border-transparent font-medium text-xs text-gray-400 hover:text-white">
+        <button onclick="switchAdminTab('adminChat')" id="tabAdminAdminChat" class="pb-3 px-2 border-b-2 border-transparent font-medium text-xs text-gray-400 hover:text-white whitespace-nowrap">
+          Chat Pasajeros
+        </button>
+        <button onclick="switchAdminTab('history')" id="tabAdminHistory" class="pb-3 px-2 border-b-2 border-transparent font-medium text-xs text-gray-400 hover:text-white whitespace-nowrap">
           Histórico General
         </button>
       </div>
@@ -387,9 +426,42 @@
         </form>
       </div>
 
-      <!-- ADMIN TAB 3: GESTIÓN DE SOLICITUDES DE PASAJEROS -->
+      <!-- ADMIN TAB 3: GESTIÓN DE ABONOS Y CORTE DE SALDO -->
+      <div id="adminTabContentAbonos" class="hidden max-w-xl mx-auto card-neon p-6 rounded-2xl">
+        <h3 class="text-lg font-syne font-bold text-white mb-1">REGISTRAR ABONO / PAGO DE PASAJERO</h3>
+        <p class="text-xs text-gray-400 mb-4">Descuenta montos abonados antes del corte sin borrar el saldo del siguiente mes.</p>
+
+        <form onsubmit="handleSaveAbono(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-300 mb-1">SELECCIONAR PASAJERO</label>
+            <select id="abonoPassengerId" required class="w-full input-neon rounded-lg px-3 py-2 text-xs">
+              <option value="">Cargando pasajeros...</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-300 mb-1">MONTO DEL ABONO ($ COP)</label>
+              <input type="number" id="abonoAmount" placeholder="Ej. 100000" min="1" required class="w-full input-neon rounded-lg px-3 py-2 text-xs">
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-300 mb-1">FECHA DE PAGO</label>
+              <input type="date" id="abonoDate" required class="w-full input-neon rounded-lg px-3 py-2 text-xs">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-300 mb-1">NOTAS / CONCEPTO (OPCIONAL)</label>
+            <input type="text" id="abonoNotes" placeholder="Ej. Pago parcial corte día 26" class="w-full input-neon rounded-lg px-3 py-2 text-xs">
+          </div>
+
+          <button type="submit" class="w-full btn-neon-pink font-semibold py-2.5 rounded-lg text-xs mt-2">
+            REGISTRAR ABONO
+          </button>
+        </form>
+      </div>
+
+      <!-- ADMIN TAB 4: GESTIÓN DE SOLICITUDES DE PASAJEROS -->
       <div id="adminTabContentRequests" class="hidden space-y-4">
-        <h3 class="text-base font-syne font-bold text-white">SOLICITUDES PENDIENTES DE PASAJEROS</h3>
+        <h3 class="text-base font-syne font-bold text-white">SOLICITUDES ENVIADAS POR PASAJEROS</h3>
         <div class="card-neon rounded-xl overflow-hidden">
           <table class="w-full text-left border-collapse text-xs">
             <thead>
@@ -407,12 +479,33 @@
         </div>
       </div>
 
-      <!-- ADMIN TAB 4: HISTÓRICO GENERAL CON FILTER Y JOIN -->
+      <!-- ADMIN TAB 5: CHAT ADMIN PASAJERO -->
+      <div id="adminTabContentAdminChat" class="hidden space-y-4 max-w-2xl mx-auto">
+        <div class="flex items-center space-x-3 bg-purple-950/20 p-3 rounded-xl border border-purple-900/30">
+          <label class="text-xs text-gray-300 font-medium">Seleccionar Pasajero para Chatear:</label>
+          <select id="adminChatPassengerSelect" onchange="loadAdminChatMessages()" class="input-neon rounded-lg px-3 py-1.5 text-xs">
+            <option value="">-- Elige un Pasajero --</option>
+          </select>
+        </div>
+
+        <div class="card-neon p-4 rounded-xl h-[400px] flex flex-col justify-between">
+          <div id="adminChatMessagesBox" class="flex-grow overflow-y-auto space-y-2 text-xs px-1">
+            <p class="text-center text-gray-500 py-10">Selecciona un pasajero arriba para iniciar la conversación.</p>
+          </div>
+
+          <form onsubmit="handleSendAdminMessage(event)" class="flex space-x-2 border-t border-purple-900/40 pt-3">
+            <input type="text" id="adminChatInputText" placeholder="Responde al pasajero..." required class="flex-grow input-neon rounded-lg px-3 py-2 text-xs">
+            <button type="submit" class="btn-neon-pink px-4 py-2 rounded-lg text-xs font-semibold">ENVIAR</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ADMIN TAB 6: HISTÓRICO GENERAL CON FILTER Y JOIN -->
       <div id="adminTabContentHistory" class="hidden space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-purple-950/10 p-4 rounded-xl border border-purple-900/30">
           <div>
-            <h3 class="text-base font-syne font-bold text-white">HISTORIAL GENERAL</h3>
-            <p class="text-xs text-gray-400">Listado detallado de viajes por pasajero</p>
+            <h3 class="text-base font-syne font-bold text-white">HISTORIAL GENERAL DE SERVICIOS</h3>
+            <p class="text-xs text-gray-400">Listado de viajes y control de estado</p>
           </div>
 
           <div class="flex flex-wrap items-center gap-3">
@@ -458,13 +551,15 @@
     <p>© 2026 Sistema Privado de Registro de Transporte</p>
   </footer>
 
-  <!-- LÓGICA JAVASCRIPT CORREGIDA Y OPTIMIZADA -->
+  <!-- LÓGICA JAVASCRIPT COMPLETA CON ABONOS, CHAT Y RECHAZO DE SOLICITUDES -->
   <script>
     let currentUser = null;
     let currentUserRole = 'passenger';
     let passengersList = [];
     let servicesList = [];
     let pendingRequestsList = [];
+    let abonosList = [];
+    let chatMessagesList = [];
 
     const formatCOP = (val) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
 
@@ -488,12 +583,23 @@
       }
     }
 
+    function toggleModalChat(show) {
+      const modal = document.getElementById('modalChat');
+      if (show) {
+        modal.classList.remove('hidden');
+        loadPassengerChatMessages();
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       const now = new Date();
       const currentMonthStr = now.toISOString().slice(0, 7);
       document.getElementById('filterMonthPassenger').value = currentMonthStr;
       document.getElementById('adminFilterMonth').value = currentMonthStr;
       document.getElementById('srvDate').value = now.toISOString().slice(0, 10);
+      document.getElementById('abonoDate').value = now.toISOString().slice(0, 10);
 
       if (supabaseClient) {
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -551,16 +657,16 @@
     }
 
     function switchAdminTab(tab) {
-      const tabs = ['register', 'passengers', 'requests', 'history'];
+      const tabs = ['register', 'passengers', 'abonos', 'requests', 'adminChat', 'history'];
       tabs.forEach(t => {
         const content = document.getElementById(`adminTabContent${t.charAt(0).toUpperCase() + t.slice(1)}`);
         const btn = document.getElementById(`tabAdmin${t.charAt(0).toUpperCase() + t.slice(1)}`);
         if (t === tab) {
           content.classList.remove('hidden');
-          btn.className = "pb-3 px-2 border-b-2 border-pink-500 font-bold text-xs text-pink-400 flex items-center space-x-1";
+          btn.className = "pb-3 px-2 border-b-2 border-pink-500 font-bold text-xs text-pink-400 flex items-center space-x-1 whitespace-nowrap";
         } else {
           content.classList.add('hidden');
-          btn.className = "pb-3 px-2 border-b-2 border-transparent font-medium text-xs text-gray-400 hover:text-white flex items-center space-x-1";
+          btn.className = "pb-3 px-2 border-b-2 border-transparent font-medium text-xs text-gray-400 hover:text-white flex items-center space-x-1 whitespace-nowrap";
         }
       });
     }
@@ -581,26 +687,66 @@
         if (error) throw error;
 
         toggleModalSolicitud(false);
-        showModal("Solicitud Enviada", "Tu solicitud de viaje fue enviada al administrador para asignación.");
+        showModal("Solicitud Enviada", "Tu solicitud de viaje fue enviada al administrador.");
       } catch (err) {
         showModal("Error", "No se pudo registrar la solicitud: " + err.message);
       }
     }
 
-    // CARGAR DATOS PASAJERO
+    // CARGAR CHAT PARA EL PASAJERO
+    async function loadPassengerChatMessages() {
+      if (!supabaseClient || !currentUser) return;
+      const { data } = await supabaseClient.from('mensajes_chat').select('*').eq('passenger_id', currentUser.id).order('created_at', { ascending: true });
+      chatMessagesList = data || [];
+
+      const box = document.getElementById('chatMessagesBox');
+      box.innerHTML = '';
+      chatMessagesList.forEach(m => {
+        const isMe = m.sender_role === 'passenger';
+        box.innerHTML += `
+          <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} my-1">
+            <div class="${isMe ? 'bg-pink-900/60 text-pink-100 border border-pink-500/30' : 'bg-purple-950/70 text-gray-200 border border-purple-800/40'} px-3 py-1.5 rounded-xl max-w-[80%]">
+              ${m.message}
+            </div>
+            <span class="text-[9px] text-gray-500 mt-0.5">${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+          </div>
+        `;
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    // ENVIAR MENSAJE DESDE PASAJERO
+    async function handleSendMessage(e) {
+      e.preventDefault();
+      const text = document.getElementById('chatInputText').value.trim();
+      if (!text) return;
+
+      await supabaseClient.from('mensajes_chat').insert([
+        { passenger_id: currentUser.id, sender_role: 'passenger', message: text }
+      ]);
+      document.getElementById('chatInputText').value = '';
+      await loadPassengerChatMessages();
+    }
+
+    // CARGAR DATOS PASAJERO (SERVICIOS Y ABONOS)
     async function loadPassengerData() {
       if (!supabaseClient || !currentUser) return;
 
-      const { data, error } = await supabaseClient
+      const { data: services } = await supabaseClient
         .from('servicios_transporte')
         .select('*')
         .eq('passenger_id', currentUser.id)
         .order('date', { ascending: false });
 
-      if (!error && data) {
-        servicesList = data;
-        renderPassengerDashboard();
-      }
+      const { data: abonos } = await supabaseClient
+        .from('abonos_pasajero')
+        .select('*')
+        .eq('passenger_id', currentUser.id);
+
+      servicesList = services || [];
+      abonosList = abonos || [];
+
+      renderPassengerDashboard();
     }
 
     function renderPassengerDashboard() {
@@ -608,11 +754,15 @@
       const filtered = servicesList.filter(s => !selectedMonth || s.date.startsWith(selectedMonth));
 
       const totalCount = filtered.length;
-      const totalPrice = filtered.reduce((acc, curr) => acc + Number(curr.price || 0), 0);
+      const grandTotalServices = servicesList.reduce((acc, curr) => acc + Number(curr.price || 0), 0);
+      const grandTotalAbonos = abonosList.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+      const balanceReal = grandTotalServices - grandTotalAbonos;
+
       const lastService = servicesList.length > 0 ? servicesList[0] : null;
 
       document.getElementById('kpiPassengerTotalCount').textContent = totalCount;
-      document.getElementById('kpiPassengerTotalPrice').textContent = formatCOP(totalPrice);
+      document.getElementById('kpiPassengerBalance').textContent = formatCOP(balanceReal >= 0 ? balanceReal : 0);
+      document.getElementById('kpiPassengerTotalAbonos').textContent = `Total Abonos: ${formatCOP(grandTotalAbonos)}`;
 
       if (lastService) {
         document.getElementById('kpiPassengerLastDate').textContent = `${lastService.date} ${lastService.time}`;
@@ -649,27 +799,30 @@
     async function loadAdminData() {
       if (!supabaseClient) return;
 
-      // Cargar lista de perfiles/pasajeros
       const { data: passengers } = await supabaseClient.from('profiles').select('*').eq('role', 'passenger');
       passengersList = passengers || [];
 
       const selectForm = document.getElementById('srvPassengerId');
       const selectFilter = document.getElementById('adminFilterPassengerId');
+      const selectAbono = document.getElementById('abonoPassengerId');
+      const selectChat = document.getElementById('adminChatPassengerSelect');
 
       selectForm.innerHTML = '<option value="">-- Seleccionar Pasajero --</option>';
       selectFilter.innerHTML = '<option value="ALL">Todos los Pasajeros</option>';
+      selectAbono.innerHTML = '<option value="">-- Seleccionar Pasajero --</option>';
+      selectChat.innerHTML = '<option value="">-- Elige un Pasajero --</option>';
 
       passengersList.forEach(p => {
         const displayName = p.full_name || p.email;
         selectForm.innerHTML += `<option value="${p.id}">${displayName}</option>`;
         selectFilter.innerHTML += `<option value="${p.id}">${displayName}</option>`;
+        selectAbono.innerHTML += `<option value="${p.id}">${displayName}</option>`;
+        selectChat.innerHTML += `<option value="${p.id}">${displayName}</option>`;
       });
 
-      // Cargar servicios con JOIN manual para garantizar compatibilidad
       const { data: services } = await supabaseClient.from('servicios_transporte').select('*').order('date', { ascending: false });
       servicesList = services || [];
 
-      // Cargar solicitudes pendientes
       const { data: requests } = await supabaseClient.from('solicitudes_servicio').select('*').eq('status', 'pendiente');
       pendingRequestsList = requests || [];
 
@@ -685,7 +838,69 @@
       renderAdminRequests();
     }
 
-    // CREAR PASAJERO DESDE ADMIN (GUARDA NOMBRE COMPLETO)
+    // CHAT ADMIN: CARGAR Y ENVIAR MENSAJES
+    async function loadAdminChatMessages() {
+      const passengerId = document.getElementById('adminChatPassengerSelect').value;
+      const box = document.getElementById('adminChatMessagesBox');
+      if (!passengerId) {
+        box.innerHTML = '<p class="text-center text-gray-500 py-10">Selecciona un pasajero arriba para iniciar la conversación.</p>';
+        return;
+      }
+
+      const { data } = await supabaseClient.from('mensajes_chat').select('*').eq('passenger_id', passengerId).order('created_at', { ascending: true });
+      box.innerHTML = '';
+      (data || []).forEach(m => {
+        const isMe = m.sender_role === 'admin';
+        box.innerHTML += `
+          <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} my-1">
+            <div class="${isMe ? 'bg-pink-900/60 text-pink-100 border border-pink-500/30' : 'bg-purple-950/70 text-gray-200 border border-purple-800/40'} px-3 py-1.5 rounded-xl max-w-[80%]">
+              ${m.message}
+            </div>
+            <span class="text-[9px] text-gray-500 mt-0.5">${new Date(m.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+          </div>
+        `;
+      });
+      box.scrollTop = box.scrollHeight;
+    }
+
+    async function handleSendAdminMessage(e) {
+      e.preventDefault();
+      const passengerId = document.getElementById('adminChatPassengerSelect').value;
+      const text = document.getElementById('adminChatInputText').value.trim();
+      if (!passengerId || !text) return;
+
+      await supabaseClient.from('mensajes_chat').insert([
+        { passenger_id: passengerId, sender_role: 'admin', message: text }
+      ]);
+      document.getElementById('adminChatInputText').value = '';
+      await loadAdminChatMessages();
+    }
+
+    // REGISTRAR ABONO DESDE ADMIN
+    async function handleSaveAbono(e) {
+      e.preventDefault();
+      const passenger_id = document.getElementById('abonoPassengerId').value;
+      const amount = parseFloat(document.getElementById('abonoAmount').value);
+      const date = document.getElementById('abonoDate').value;
+      const notes = document.getElementById('abonoNotes').value.trim();
+
+      try {
+        const { error } = await supabaseClient.from('abonos_pasajero').insert([
+          { passenger_id, amount, date, notes }
+        ]);
+
+        if (error) throw error;
+
+        showModal("Abono Guardado", "El abono fue descontado correctamente del saldo del pasajero.");
+        document.getElementById('abonoAmount').value = '';
+        document.getElementById('abonoNotes').value = '';
+        await loadAdminData();
+      } catch (err) {
+        showModal("Error", "No se pudo registrar el abono: " + err.message);
+      }
+    }
+
+    // CREAR PASAJERO DESDE ADMIN
     async function handleCreatePassenger(e) {
       e.preventDefault();
       const name = document.getElementById('newPassengerName').value.trim();
@@ -763,14 +978,15 @@
           <td class="p-3 text-gray-300">${r.date} ${r.time}</td>
           <td class="p-3 text-gray-200">${r.origin} → ${r.destination}</td>
           <td class="p-3 text-center space-x-2">
-            <button onclick="approveRequest('${r.id}', '${r.passenger_id}', '${r.date}', '${r.time}', '${r.origin}', '${r.destination}')" class="bg-green-950/60 text-green-300 border border-green-700/50 px-2 py-1 rounded text-[11px]">Aprobar</button>
+            <button onclick="approveRequest('${r.id}', '${r.passenger_id}', '${r.date}', '${r.time}', '${r.origin}', '${r.destination}')" class="bg-green-950/60 hover:bg-green-900 text-green-300 border border-green-700/50 px-2 py-1 rounded text-[11px]">Aprobar</button>
+            <button onclick="rejectRequest('${r.id}')" class="bg-red-950/60 hover:bg-red-900 text-red-300 border border-red-700/50 px-2 py-1 rounded text-[11px]">Rechazar</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    // APROBAR SOLICITUD Y ASIGNAR PRECIO
+    // APROBAR Y RECHAZAR SOLICITUDES
     async function approveRequest(reqId, passengerId, date, time, origin, destination) {
       const priceStr = prompt("Asigna el precio ($ COP) para este servicio:");
       if (!priceStr) return;
@@ -780,13 +996,22 @@
         await supabaseClient.from('servicios_transporte').insert([
           { passenger_id: passengerId, date, time, origin, destination, price, driver_type: 'Conductor Interno' }
         ]);
-
         await supabaseClient.from('solicitudes_servicio').update({ status: 'aprobado' }).eq('id', reqId);
-
-        showModal("Solicitud Aprobada", "El viaje fue convertido en servicio registrado.");
+        showModal("Solicitud Aprobada", "El viaje fue registrado exitosamente.");
         await loadAdminData();
       } catch (err) {
         showModal("Error", "No se pudo procesar la aprobación: " + err.message);
+      }
+    }
+
+    async function rejectRequest(reqId) {
+      if (!confirm("¿Seguro que deseas rechazar esta solicitud?")) return;
+      try {
+        await supabaseClient.from('solicitudes_servicio').update({ status: 'rechazado' }).eq('id', reqId);
+        showModal("Solicitud Rechazada", "La solicitud fue marcada como rechazada.");
+        await loadAdminData();
+      } catch (err) {
+        showModal("Error", "No se pudo rechazar: " + err.message);
       }
     }
 
