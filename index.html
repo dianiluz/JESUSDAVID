@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-black">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RideFlow - Control de Traslados</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Font Family -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            purple: '#430056',
+                            purpleDark: '#22002d',
+                            pink: '#db137a',
+                            pinkHover: '#b50e63',
+                            neonGreen: '#39ff14',
+                            neonCyan: '#32c7eb',
+                            darkCard: '#0f0b15',
+                            darkBorder: '#281738'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #09050d; }
+        ::-webkit-scrollbar-thumb { background: #281738; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #db137a; }
+        
+        .glow-pink { box-shadow: 0 0 20px rgba(219, 19, 122, 0.25); }
+        .glow-purple { box-shadow: 0 0 25px rgba(67, 0, 86, 0.4); }
+        .glass-card {
+            background: rgba(15, 11, 21, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(40, 23, 56, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 font-sans min-h-full flex flex-col antialiased selection:bg-brand-pink selection:text-white">
+
+    <!-- Header Principal (Para pantallas con sesión iniciada) -->
+    <header id="mainHeader" class="sticky top-0 z-40 border-b border-brand-darkBorder bg-black/95 backdrop-blur-md hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-4">
+            <!-- Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-purple via-brand-pink to-brand-neonCyan flex items-center justify-center shadow-lg shadow-brand-pink/20">
+                    <i data-lucide="car" class="w-5 h-5 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                        RIDE<span class="text-brand-pink">FLOW</span>
+                    </h1>
+                    <p class="text-xs text-gray-400" id="headerSubtitle">Portal de Servicios</p>
+                </div>
+            </div>
+
+            <!-- Info Usuario y Salir -->
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p id="userEmailBadge" class="text-xs font-semibold text-gray-200">usuario@correo.com</p>
+                    <p id="userRoleBadge" class="text-[10px] text-brand-pink uppercase tracking-wider font-bold">Pasajero</p>
+                </div>
+                <button onclick="handleLogout()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-darkCard border border-brand-darkBorder hover:border-brand-pink/50 text-gray-300 hover:text-white transition flex items-center gap-1.5">
+                    <i data-lucide="log-out" class="w-4 h-4 text-brand-pink"></i>
+                    <span class="hidden sm:inline">Cerrar Sesión</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col justify-center">
+
+        <!-- ==================== SCREEN 1: LOGIN ==================== -->
+        <section id="viewLogin" class="max-w-md w-full mx-auto my-auto animate-fadeIn">
+            <div class="glass-card rounded-2xl p-6 sm:p-8 border border-brand-darkBorder glow-purple relative overflow-hidden">
+                
+                <!-- Botón Engranaje Config Supabase -->
+                <button onclick="openSupabaseModal()" class="absolute top-4 right-4 p-2 text-gray-500 hover:text-brand-pink transition" title="Configurar Supabase">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                </button>
+
+                <div class="text-center mb-8">
+                    <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-brand-purple via-brand-pink to-brand-neonCyan flex items-center justify-center shadow-lg shadow-brand-pink/30">
+                        <i data-lucide="car" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-white">Iniciar Sesión</h2>
+                    <p class="text-xs text-gray-400 mt-1">Ingresa tus credenciales para acceder</p>
+                </div>
+
+                <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
+                    <div>
+                        <label for="loginEmail" class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">Correo Electrónico</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i data-lucide="mail" class="w-4 h-4"></i>
+                            </span>
+                            <input type="email" id="loginEmail" required placeholder="tu@correo.com"
+                                   class="w-full bg-black/60 border border-brand-darkBorder rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-brand-pink transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="loginPassword" class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">Contraseña</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-500">
+                                <i data-lucide="lock" class="w-4 h-4"></i>
+                            </span>
+                            <input type="password" id="loginPassword" required placeholder="••••••••"
+                                   class="w-full bg-black/60 border border-brand-darkBorder rounded-xl pl-10 pr-4 py-3 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-brand-pink transition">
+                        </div>
+                    </div>
+
+                    <div id="loginError" class="hidden p-3 rounded-xl bg-red-950/60 border border-red-800/80 text-xs text-red-300 text-center"></div>
+
+                    <button type="submit" id="btnLoginSubmit"
+                            class="w-full bg-gradient-to-r from-brand-purple via-brand-pink to-purple-600 hover:from-brand-purpleDark hover:to-brand-pink text-white font-bold py-3.5 rounded-xl shadow-lg shadow-brand-pink/20 transition duration-300 flex items-center justify-center gap-2">
+                        <i data-lucide="log-in" class="w-4 h-4"></i>
+                        <span>Ingresar</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+
+        <!-- ==================== SCREEN 2: VISTA PASAJERO (SOLO DASHBOARD & HISTORIAL) ==================== -->
+        <section id="viewPassenger" class="hidden space-y-8 animate-fadeIn">
+            <!-- Header Filtro por Mes -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-brand-darkBorder">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">Resumen de Traslados</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">Consulta tus viajes registrados y totales del período.</p>
+                </div>
+
+                <div class="flex items-center gap-3 bg-brand-darkCard border border-brand-darkBorder p-2 rounded-xl">
+                    <div class="flex items-center gap-2 px-2 text-gray-400">
+                        <i data-lucide="calendar" class="w-4 h-4 text-brand-pink"></i>
+                        <span class="text-xs font-semibold uppercase tracking-wider">Filtrar:</span>
+                    </div>
+                    <select id="passengerMonthFilter" onchange="renderPassengerDashboard()" 
+                            class="bg-black/60 text-white text-xs font-medium rounded-lg px-3 py-2 border border-brand-darkBorder focus:outline-none focus:border-brand-pink transition cursor-pointer">
+                        <option value="ALL">Todos los meses</option>
+                        <option value="0">Enero</option>
+                        <option value="1">Febrero</option>
+                        <option value="2">Marzo</option>
+                        <option value="3">Abril</option>
+                        <option value="4">Mayo</option>
+                        <option value="5">Junio</option>
+                        <option value="6">Julio</option>
+                        <option value="7">Agosto</option>
+                        <option value="8">Septiembre</option>
+                        <option value="9">Octubre</option>
+                        <option value="10">Noviembre</option>
+                        <option value="11">Diciembre</option>
+                    </select>
+
+                    <select id="passengerYearFilter" onchange="renderPassengerDashboard()" 
+                            class="bg-black/60 text-white text-xs font-medium rounded-lg px-3 py-2 border border-brand-darkBorder focus:outline-none focus:border-brand-pink transition cursor-pointer">
+                    </select>
+                </div>
+            </div>
+
+            <!-- DASHBOARD DE 3 TARJETAS -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Tarjeta 1: Número de Servicios -->
+                <div class="glass-card rounded-2xl p-6 border-brand-darkBorder">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Número de Servicios</span>
+                        <div class="p-3 bg-brand-purple/40 rounded-xl text-brand-pink border border-brand-pink/20">
+                            <i data-lucide="route" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p id="kpiTotalServices" class="text-4xl font-extrabold text-white">0</p>
+                        <p class="text-xs text-gray-500 mt-1">Servicios acumulados</p>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2: Total a Pagar -->
+                <div class="glass-card rounded-2xl p-6 border-brand-pink/30">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Total a Pagar</span>
+                        <div class="p-3 bg-emerald-950/50 rounded-xl text-brand-neonGreen border border-emerald-500/30">
+                            <i data-lucide="wallet" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p id="kpiTotalAmount" class="text-4xl font-extrabold text-brand-neonGreen">$0</p>
+                        <p class="text-xs text-gray-500 mt-1">Monto total en el período</p>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 3: Último Servicio -->
+                <div class="glass-card rounded-2xl p-6 border-brand-darkBorder">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Último Servicio</span>
+                        <div class="p-3 bg-brand-purple/40 rounded-xl text-brand-neonCyan border border-brand-neonCyan/20">
+                            <i data-lucide="clock" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <p id="kpiLastServiceDate" class="text-base font-bold text-white truncate">Sin registros</p>
+                        <p id="kpiLastServiceRoute" class="text-xs text-gray-400 truncate mt-0.5">--</p>
+                        <p id="kpiLastServicePrice" class="text-sm font-semibold text-brand-neonGreen mt-1">$0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLA PASAJERO (SOLO FECHA, RUTA Y PRECIO) -->
+            <div class="glass-card rounded-2xl overflow-hidden border border-brand-darkBorder shadow-2xl">
+                <div class="p-5 border-b border-brand-darkBorder flex items-center justify-between bg-black/40">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="list" class="w-5 h-5 text-brand-pink"></i>
+                        <h3 class="font-bold text-white text-base">Histórico de Servicios</h3>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-brand-darkCard/80 text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-brand-darkBorder">
+                                <th class="py-4 px-6">Fecha y Hora</th>
+                                <th class="py-4 px-6">Ruta (Origen $\rightarrow$ Destino)</th>
+                                <th class="py-4 px-6 text-right">Precio</th>
+                            </tr>
+                        </thead>
+                        <tbody id="passengerTableBody" class="divide-y divide-brand-darkBorder text-sm">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="passengerEmptyState" class="hidden py-12 text-center px-4">
+                    <p class="text-sm text-gray-400">No hay traslados registrados para el mes seleccionado.</p>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ==================== SCREEN 3: VISTA ADMINISTRADOR ==================== -->
+        <section id="viewAdmin" class="hidden space-y-8 animate-fadeIn">
+            <div class="pb-4 border-b border-brand-darkBorder">
+                <h2 class="text-2xl font-bold text-white">Panel Administrador</h2>
+                <p class="text-xs text-gray-400 mt-1">Registro de nuevos traslados y control total de la base de datos.</p>
+            </div>
+
+            <!-- Formulario de Registro -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 border border-brand-darkBorder glow-purple">
+                <h3 class="text-base font-bold text-white mb-6 flex items-center gap-2">
+                    <i data-lucide="plus-circle" class="w-5 h-5 text-brand-pink"></i>
+                    <span>Registrar Nuevo Servicio</span>
+                </h3>
+
+                <form id="serviceForm" onsubmit="handleRegisterService(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">Fecha *</label>
+                            <input type="date" id="inputDate" required class="w-full bg-black/60 border border-brand-darkBorder rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-pink transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">Hora *</label>
+                            <input type="time" id="inputTime" required class="w-full bg-black/60 border border-brand-darkBorder rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-pink transition">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">Lugar de Inicio (Origen) *</label>
+                        <input type="text" id="inputOrigin" placeholder="Ej. Calle 72 # 45-12" required class="w-full bg-black/60 border border-brand-darkBorder rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-pink transition">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">Lugar de Fin (Destino) *</label>
+                        <input type="text" id="inputDestination" placeholder="Ej. Aeropuerto Ernesto Cortissoz" required class="w-full bg-black/60 border border-brand-darkBorder rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-pink transition">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">Precio ($ COP) *</label>
+                            <input type="number" id="inputPrice" min="0" step="500" placeholder="Ej. 35000" required class="w-full bg-black/60 border border-brand-darkBorder rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-pink transition">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 mb-2">Plataforma / Proveedor *</label>
+                            <select id="inputDriverType" required class="w-full bg-black/60 border border-brand-darkBorder rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-pink transition cursor-pointer">
+                                <option value="InDrive">InDrive</option>
+                                <option value="Conductor Interno">Conductor Interno</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btnSubmitForm" class="w-full bg-gradient-to-r from-brand-purple via-brand-pink to-purple-600 hover:from-brand-purpleDark hover:to-brand-pink text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-brand-pink/20 transition flex items-center justify-center gap-2">
+                        <i data-lucide="save" class="w-5 h-5"></i>
+                        <span>Guardar Servicio</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Tabla Admin -->
+            <div class="glass-card rounded-2xl overflow-hidden border border-brand-darkBorder">
+                <div class="p-5 border-b border-brand-darkBorder flex items-center justify-between bg-black/40">
+                    <h3 class="font-bold text-white text-sm">Registros Completos (Administrador)</h3>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-brand-darkCard/80 text-gray-400 text-xs font-bold uppercase tracking-wider border-b border-brand-darkBorder">
+                                <th class="py-3 px-4">Fecha/Hora</th>
+                                <th class="py-3 px-4">Origen $\rightarrow$ Destino</th>
+                                <th class="py-3 px-4">Proveedor</th>
+                                <th class="py-3 px-4">Precio</th>
+                                <th class="py-3 px-4 text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTableBody" class="divide-y divide-brand-darkBorder text-sm">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Configuración Supabase -->
+    <div id="supabaseModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full rounded-2xl p-6 border border-brand-darkBorder relative">
+            <button onclick="closeSupabaseModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <h3 class="text-lg font-bold text-white mb-2 flex items-center gap-2">
+                <i data-lucide="database" class="w-5 h-5 text-brand-pink"></i>
+                <span>Credenciales Supabase</span>
+            </h3>
+
+            <div class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold uppercase text-gray-300 mb-1">Project URL</label>
+                    <input type="text" id="supabaseUrlInput" placeholder="https://xyz.supabase.co" class="w-full bg-black/70 border border-brand-darkBorder rounded-xl px-3 py-2.5 text-white">
+                </div>
+                <div>
+                    <label class="block font-bold uppercase text-gray-300 mb-1">Anon / Public Key</label>
+                    <input type="password" id="supabaseKeyInput" placeholder="eyJhbGciOi..." class="w-full bg-black/70 border border-brand-darkBorder rounded-xl px-3 py-2.5 text-white">
+                </div>
+
+                <button onclick="saveSupabaseCredentials()" class="w-full bg-brand-pink hover:bg-brand-pinkHover text-white font-bold py-3 rounded-xl transition">
+                    Guardar y Conectar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT PRINCIPAL LÓGICA & SUPABASE -->
+    <script>
+        const STORAGE_SUPABASE_KEY = 'rf_supabase_auth_config';
+        let supabaseClient = null;
+        let currentUser = null;
+        let currentUserRole = 'passenger'; // 'passenger' | 'admin'
+        let servicesData = [];
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            initSupabase();
+            setTodayDateInForm();
+            lucide.createIcons();
+        });
+
+        function initSupabase() {
+            const saved = localStorage.getItem(STORAGE_SUPABASE_KEY);
+            if (saved) {
+                try {
+                    const { url, key } = JSON.parse(saved);
+                    if (url && key && window.supabase) {
+                        supabaseClient = window.supabase.createClient(url, key);
+                        document.getElementById('supabaseUrlInput').value = url;
+                        document.getElementById('supabaseKeyInput').value = key;
+                        checkSession();
+                        return;
+                    }
+                } catch (e) {}
+            }
+            // Si no hay Supabase configurado, muestra pantalla de login con advertencia
+            showView('viewLogin');
+        }
+
+        async function checkSession() {
+            if (!supabaseClient) return;
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session?.user) {
+                currentUser = session.user;
+                await fetchUserRoleAndRedirect();
+            } else {
+                showView('viewLogin');
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.classList.add('hidden');
+
+            if (!supabaseClient) {
+                errorDiv.textContent = "Configura primero tu URL y Key de Supabase en el botón de engranaje.";
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                
+                currentUser = data.user;
+                await fetchUserRoleAndRedirect();
+            } catch (err) {
+                errorDiv.textContent = err.message || "Error al iniciar sesión";
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        async function fetchUserRoleAndRedirect() {
+            // Consultar tabla de perfiles/roles en Supabase o user_metadata
+            let role = currentUser.user_metadata?.role;
+
+            if (!role && supabaseClient) {
+                try {
+                    const { data } = await supabaseClient
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', currentUser.id)
+                        .single();
+                    if (data?.role) role = data.role;
+                } catch (e) {}
+            }
+
+            currentUserRole = role === 'admin' ? 'admin' : 'passenger';
+
+            // Actualizar Badge Header
+            document.getElementById('mainHeader').classList.remove('hidden');
+            document.getElementById('userEmailBadge').textContent = currentUser.email;
+            document.getElementById('userRoleBadge').textContent = currentUserRole.toUpperCase();
+
+            await loadServices();
+
+            if (currentUserRole === 'admin') {
+                showView('viewAdmin');
+                renderAdminTable();
+            } else {
+                showView('viewPassenger');
+                populateYearFilter();
+                renderPassengerDashboard();
+            }
+        }
+
+        async function handleLogout() {
+            if (supabaseClient) {
+                await supabaseClient.auth.signOut();
+            }
+            currentUser = null;
+            document.getElementById('mainHeader').classList.add('hidden');
+            showView('viewLogin');
+        }
+
+        function showView(viewId) {
+            ['viewLogin', 'viewPassenger', 'viewAdmin'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(viewId).classList.remove('hidden');
+        }
+
+        // Cargar Datos
+        async function loadServices() {
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('servicios_transporte')
+                    .select('*')
+                    .order('date', { ascending: false });
+
+                if (!error && data) {
+                    servicesData = data.map(d => ({
+                        id: d.id,
+                        date: d.date,
+                        time: d.time ? d.time.substring(0, 5) : '',
+                        origin: d.origin,
+                        destination: d.destination,
+                        price: parseFloat(d.price),
+                        driver_type: d.driver_type
+                    }));
+                }
+            } catch (e) {}
+        }
+
+        // Guardar Registro (Admin)
+        async function handleRegisterService(e) {
+            e.preventDefault();
+            const date = document.getElementById('inputDate').value;
+            const time = document.getElementById('inputTime').value;
+            const origin = document.getElementById('inputOrigin').value.trim();
+            const destination = document.getElementById('inputDestination').value.trim();
+            const price = parseFloat(document.getElementById('inputPrice').value);
+            const driver_type = document.getElementById('inputDriverType').value;
+
+            if (!supabaseClient) return;
+
+            try {
+                const { error } = await supabaseClient
+                    .from('servicios_transporte')
+                    .insert([{ date, time, origin, destination, price, driver_type }]);
+
+                if (error) throw error;
+
+                document.getElementById('inputOrigin').value = '';
+                document.getElementById('inputDestination').value = '';
+                document.getElementById('inputPrice').value = '';
+
+                await loadServices();
+                renderAdminTable();
+                alert("¡Servicio registrado con éxito!");
+            } catch (err) {
+                alert("Error al guardar: " + err.message);
+            }
+        }
+
+        async function deleteService(id) {
+            if (!confirm("¿Eliminar este servicio?")) return;
+            if (supabaseClient) {
+                await supabaseClient.from('servicios_transporte').delete().eq('id', id);
+            }
+            await loadServices();
+            renderAdminTable();
+        }
+
+        // Renderizado Pasajero
+        function renderPassengerDashboard() {
+            const monthSelect = document.getElementById('passengerMonthFilter').value;
+            const yearSelect = parseInt(document.getElementById('passengerYearFilter').value, 10);
+
+            let filtered = servicesData.filter(item => {
+                const itemDate = new Date(item.date + 'T00:00:00');
+                if (!isNaN(yearSelect) && itemDate.getFullYear() !== yearSelect) return false;
+                if (monthSelect !== 'ALL' && itemDate.getMonth() !== parseInt(monthSelect, 10)) return false;
+                return true;
+            });
+
+            filtered.sort((a, b) => new Date(`${b.date}T${b.time || '00:00'}`) - new Date(`${a.date}T${a.time || '00:00'}`));
+
+            const totalCount = filtered.length;
+            const totalAmount = filtered.reduce((acc, curr) => acc + (curr.price || 0), 0);
+
+            document.getElementById('kpiTotalServices').textContent = totalCount;
+            document.getElementById('kpiTotalAmount').textContent = formatCurrency(totalAmount);
+
+            if (filtered.length > 0) {
+                const last = filtered[0];
+                document.getElementById('kpiLastServiceDate').textContent = formatDate(last.date) + (last.time ? ` (${last.time})` : '');
+                document.getElementById('kpiLastServiceRoute').textContent = `${last.origin} ➔ ${last.destination}`;
+                document.getElementById('kpiLastServicePrice').textContent = formatCurrency(last.price);
+            } else {
+                document.getElementById('kpiLastServiceDate').textContent = 'Sin Registros';
+                document.getElementById('kpiLastServiceRoute').textContent = '--';
+                document.getElementById('kpiLastServicePrice').textContent = '$0';
+            }
+
+            const tbody = document.getElementById('passengerTableBody');
+            const emptyState = document.getElementById('passengerEmptyState');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            tbody.innerHTML = filtered.map(item => `
+                <tr class="hover:bg-brand-darkCard/50 transition border-b border-brand-darkBorder/60">
+                    <td class="py-4 px-6 whitespace-nowrap">
+                        <div class="font-semibold text-white">${formatDate(item.date)}</div>
+                        <div class="text-xs text-gray-400 mt-0.5">${item.time || 'N/A'}</div>
+                    </td>
+                    <td class="py-4 px-6">
+                        <div class="text-gray-100 font-medium">${escapeHtml(item.origin)}</div>
+                        <div class="text-xs text-brand-neonCyan mt-0.5">➔ ${escapeHtml(item.destination)}</div>
+                    </td>
+                    <td class="py-4 px-6 text-right font-bold text-brand-neonGreen">${formatCurrency(item.price)}</td>
+                </tr>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = servicesData.map(item => `
+                <tr class="hover:bg-brand-darkCard/60 transition border-b border-brand-darkBorder">
+                    <td class="py-3 px-4 text-xs text-gray-300">${item.date} (${item.time})</td>
+                    <td class="py-3 px-4 text-xs text-gray-300">${escapeHtml(item.origin)} ➔ ${escapeHtml(item.destination)}</td>
+                    <td class="py-3 px-4 text-xs"><span class="px-2 py-0.5 rounded border border-brand-darkBorder">${escapeHtml(item.driver_type)}</span></td>
+                    <td class="py-3 px-4 text-xs font-bold text-brand-neonGreen">${formatCurrency(item.price)}</td>
+                    <td class="py-3 px-4 text-center">
+                        <button onclick="deleteService('${item.id}')" class="p-1 rounded bg-red-950/40 text-red-400 hover:bg-red-900 transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // Modales y Auxiliares
+        function openSupabaseModal() { document.getElementById('supabaseModal').classList.remove('hidden'); }
+        function closeSupabaseModal() { document.getElementById('supabaseModal').classList.add('hidden'); }
+        function saveSupabaseCredentials() {
+            const url = document.getElementById('supabaseUrlInput').value.trim();
+            const key = document.getElementById('supabaseKeyInput').value.trim();
+            if (url && key) {
+                localStorage.setItem(STORAGE_SUPABASE_KEY, JSON.stringify({ url, key }));
+                initSupabase();
+                closeSupabaseModal();
+                alert("Configuración de Supabase guardada.");
+            }
+        }
+
+        function populateYearFilter() {
+            const yearSelect = document.getElementById('passengerYearFilter');
+            const currentYear = new Date().getFullYear();
+            const years = new Set([currentYear]);
+            servicesData.forEach(s => { if (s.date) years.add(new Date(s.date).getFullYear()); });
+            yearSelect.innerHTML = Array.from(years).map(y => `<option value="${y}">${y}</option>`).join('');
+            yearSelect.value = currentYear;
+        }
+
+        function setTodayDateInForm() {
+            document.getElementById('inputDate').value = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            document.getElementById('inputTime').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(amount || 0);
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const [y, m, d] = dateStr.split('-');
+            return new Intl.DateTimeFormat('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(y, m - 1, d));
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+    </script>
+</body>
+</html>
